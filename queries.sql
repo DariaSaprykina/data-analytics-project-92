@@ -67,58 +67,44 @@ order by weekday_number, name;
  * Файл age_groups.csv 
  */
 
-with tab2 as(
-	select customer_id,
-	age,
+select 
 	case
 		when age between 16 and 25 then '16-25'
 		when age between 26 and 40 then '26-40'
 		else '40+'
-	end as age_category
-	from customers
-)
-
-select distinct age_category,
-COUNT(customer_id)
-from tab2
-group by age_category
-order by 1;
+	end as age_category,
+	COUNT(customer_id) as count
+from customers
+group by 1
+order by 2;
 
 
 /*Количеству уникальных покупателей и выручке, которую они принесли по месяцам 
 * customers_by_month.csv
 */
 
-with tab3 as (
-	select 
-		to_char(sale_date,'YYYY-MM') as date, -- дата в формате год-месяц
-		s.customer_id as customer_unic, 
-		SUM(s.quantity * p.price) as income -- выручка по каждому покупателю
-	from sales s
-	join products p
-		on p.product_id = s.product_id
-	group by date, s.customer_id
-)
-
-select
-	date,
-	count(customer_unic) as total_customers,
-	SUM(income) as income
-from tab3
+select 
+	to_char(sale_date,'YYYY-MM') as date, -- дата в формате год-месяц
+	COUNT(distinct s.customer_id) as total_customers, 
+	SUM(s.quantity * p.price) as income -- выручка по каждому покупателю
+from sales s
+join products p
+	on p.product_id = s.product_id
 group by date
-order by 1;
+order by date;
+
+
 
 
 /* Покупатели - первая покупка была сделана в ходе проведения акций (стоимостью товаров = 0). 
 * Файл special_offer.csv 
 */
 
-with tab4 as (select 
-	sale_date,
+select 
+	distinct on (c.customer_id)
 	concat(c.first_name,' ', c.last_name) as customer,
-	concat(e.first_name,' ', e.last_name) as seller,
-	first_value(sale_date) over(partition by s.customer_id order by s.customer_id, sale_date) as first_value_date,
-	p.price
+	first_value(sale_date) over(partition by s.customer_id order by s.customer_id, sale_date) as sales_date,
+	concat(e.first_name,' ', e.last_name) as seller
 from sales s
 left join products p
 	on p.product_id = s.product_id
@@ -126,16 +112,8 @@ left join employees e
 	on e.employee_id  = s.sales_person_id
 left join customers c 
 	on c.customer_id = s.customer_id
-)
-select
-	distinct on(customer) customer, 
-	sale_date, 
-	seller
-from tab4
-where price = 0
+where p.price = 0
+order by c.customer_id, sales_date
 ;
-
-
-
 
 
