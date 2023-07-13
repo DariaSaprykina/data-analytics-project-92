@@ -47,7 +47,7 @@ order by average_income;
 with TAB1 as (
 select
 	concat(e.first_name,' ', e.last_name) as name,
-	TO_CHAR((sale_date),'fmday') as weekday,
+	TO_CHAR((sale_date),'day') as weekday,
 	SUM(p.price * s.quantity) as income,
 	extract(isodow from sale_date) as weekday_number
 from sales s
@@ -55,7 +55,7 @@ left join employees e
 	on s.sales_person_id = e.employee_id
 left join products p
 	on p.product_id = s.product_id
-group by concat(e.first_name,' ', e.last_name), sale_date, TO_CHAR((sale_date),'fmDay')
+group by concat(e.first_name,' ', e.last_name), sale_date, TO_CHAR((sale_date),'day')
 )
 
 select name, weekday, ROUND(SUM(income)) as income
