@@ -9,15 +9,3 @@ Dean Straight,4195,1256032202.1000
 Livia Karsen,2564,1056902108.9200
 Sheryl Hunter,4686,1056767862.5000
 Michael O'Leary,5757,927500459.8300
-0,"select
-	concat(e.first_name,' ', e.last_name) as name, --соединяем имя и фамилию
-	COUNT(s.quantity) as operations, --кол-во проданных товаров
-	SUM(p.price * s.quantity) as income --доход от проданных товаров
-from sales s
-left join employees e
-	on s.sales_person_id = e.employee_id
-left join products p
-	on p.product_id = s.product_id
-group by concat(e.first_name,' ', e.last_name) --группируем по фио продавца 
-order by income desc
-limit 10; -- выводим 10 записей, предварительно сортируя по выручке",Thu Jul 13 13:43:41 MSK 2023,
